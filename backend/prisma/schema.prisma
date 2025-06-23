@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String           @id @default(uuid())
+  email                  String           @unique
+  passwordHash           String
+  firstName              String
+  lastName               String
+  phoneNumber            String?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  lastLogin              DateTime?
+  avatarUrl              String?
+  notificationPreferences Json?
+  groupMemberships       GroupMember[]
+  createdGroups          Group[]
+  createdVenues          Venue[]
+  createdEvents          Event[]
+  createdRepertoire      Repertoire[]
+  uploadedResources      Resource[]
+  eventAttendees         EventAttendee[]
+  notifications          Notification[]
+}
+
+model Group {
+  id               String           @id @default(uuid())
+  name             String
+  description      String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  createdById      String
+  createdBy        User             @relation(fields: [createdById], references: [id])
+  avatarUrl        String?
+  settings         Json?
+  members          GroupMember[]
+  venues           Venue[]
+  events           Event[]
+  repertoire       Repertoire[]
+  resources        Resource[]
+}
+
+model GroupMember {
+  id          String    @id @default(uuid())
+  groupId     String
+  group       Group     @relation(fields: [groupId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  role        String    // 'admin', 'leader', 'member'
+  instruments String[]
+  joinedAt    DateTime  @default(now())
+  status      String    // 'active', 'inactive', 'pending'
+
+  @@unique([groupId, userId])
+}
+
+model Venue {
+  id          String    @id @default(uuid())
+  name        String
+  address     String
+  capacity    Int?
+  amenities   String[]
+  notes       String?
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  groupId     String?
+  group       Group?    @relation(fields: [groupId], references: [id])
+  events      Event[]
+}
+
+model Event {
+  id                String          @id @default(uuid())
+  groupId           String
+  group             Group           @relation(fields: [groupId], references: [id])
+  title             String
+  description       String?
+  startTime         DateTime
+  endTime           DateTime
+  venueId           String?
+  venue             Venue?          @relation(fields: [venueId], references: [id])
+  isRecurring       Boolean         @default(false)
+  recurrencePattern Json?
+  createdById       String
+  createdBy         User            @relation(fields: [createdById], references: [id])
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  status            String          // 'scheduled', 'cancelled', 'completed'
+  attendees         EventAttendee[]
+  eventRepertoire   EventRepertoire[]
+  resources         Resource[]
+}
+
+model EventAttendee {
+  id               String    @id @default(uuid())
+  eventId          String
+  event            Event     @relation(fields: [eventId], references: [id])
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+  rsvpStatus       String    // 'attending', 'not_attending', 'maybe', 'no_response'
+  rsvpTime         DateTime?
+  attendanceStatus String?   // 'present', 'absent', 'late', null
+  absenceReason    String?
+  notes            String?
+
+  @@unique([eventId, userId])
+}
+
+model Repertoire {
+  id               String            @id @default(uuid())
+  groupId          String
+  group            Group             @relation(fields: [groupId], references: [id])
+  title            String
+  composer         String
+  arranger         String?
+  notes            String?
+  difficulty       Int?
+  durationMinutes  Int?
+  createdById      String
+  createdBy        User              @relation(fields: [createdById], references: [id])
+  createdAt        DateTime          @default(now())
+  eventRepertoire  EventRepertoire[]
+  resources        Resource[]
+}
+
+model EventRepertoire {
+  id             String     @id @default(uuid())
+  eventId        String
+  event          Event      @relation(fields: [eventId], references: [id])
+  repertoireId   String
+  repertoire     Repertoire @relation(fields: [repertoireId], references: [id])
+  orderIndex     Int
+  durationMinutes Int?
+  notes          String?
+
+  @@unique([eventId, repertoireId])
+}
+
+model Resource {
+  id            String     @id @default(uuid())
+  name          String
+  type          String     // 'sheet_music', 'audio', 'video', 'document', 'other'
+  url           String
+  uploadedById  String
+  uploadedBy    User       @relation(fields: [uploadedById], references: [id])
+  uploadedAt    DateTime   @default(now())
+  groupId       String
+  group         Group      @relation(fields: [groupId], references: [id])
+  repertoireId  String?
+  repertoire    Repertoire? @relation(fields: [repertoireId], references: [id])
+  eventId       String?
+  event         Event?     @relation(fields: [eventId], references: [id])
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  type        String    // 'event_created', 'event_updated', 'event_reminder', etc.
+  content     Json
+  createdAt   DateTime  @default(now())
+  readAt      DateTime?
+  sentAt      DateTime?
+  referenceId String?   // Could be eventId, groupId, etc.
+}

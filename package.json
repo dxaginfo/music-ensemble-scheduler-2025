@@ -1,0 +1,45 @@
+{
+  "name": "music-ensemble-scheduler-2025",
+  "version": "0.1.0",
+  "description": "A comprehensive web application for scheduling and managing rehearsals for musical groups.",
+  "main": "index.js",
+  "scripts": {
+    "start": "echo \"This is a monorepo. Please run scripts in the respective packages.\" && exit 1",
+    "install:all": "npm install && npm run install:backend && npm run install:frontend",
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm start",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dxaginfo/music-ensemble-scheduler-2025.git"
+  },
+  "keywords": [
+    "music",
+    "rehearsal",
+    "scheduler",
+    "ensemble",
+    "calendar",
+    "attendance"
+  ],
+  "author": "DX AG",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dxaginfo/music-ensemble-scheduler-2025/issues"
+  },
+  "homepage": "https://github.com/dxaginfo/music-ensemble-scheduler-2025#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
